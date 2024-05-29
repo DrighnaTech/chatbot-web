@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson Plans</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lesson Plans</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>S_no</th>
+                <th>Name</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>Start Time</th>
+                <th>Latency</th>
+                <th>Tokens</th>
+                <th>Cost</th>
+            </tr>
+        </thead>
+        <tbody id="lessonTableBody">
+            <!-- Lesson data will be dynamically inserted here -->
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchLessons() {
+            const response = await fetch('/lessons');
+            const lessons = await response.json();
+            const lessonTableBody = document.getElementById('lessonTableBody');
+            lessonTableBody.innerHTML = '';
+
+            lessons.forEach(lesson => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${lesson.S_no}</td>
+                    <td>${lesson.Name}</td>
+                    <td>${lesson.Input}</td>
+                    <td>${lesson.Output}</td>
+                    <td>${lesson.Start_Time}</td>
+                    <td>${lesson.Latency}</td>
+                    <td>${lesson.Tokens}</td>
+                    <td>${lesson.Cost}</td>
+                `;
+                lessonTableBody.appendChild(row);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchLessons);
+    </script>
+</body>
+</html>

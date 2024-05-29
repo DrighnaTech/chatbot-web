@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with PDF using Gemini</title>
+    <style>
+        /* styles.css */
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            z-index: 3; /* Increased z-index for sidebar */
+        }
+
+        .logo {
+            text-align: center;
+        }
+
+        .logo img {
+            width: 100px;
+        }
+
+        .logo h2 {
+            font-size: 14px;
+            color: #888888;
+        }
+
+        .menu {
+            margin-top: 20px;
+        }
+
+        .menu h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .menu p {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .upload-box {
+            border: 2px dashed #cccccc;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .file-label {
+            display: block;
+            cursor: pointer;
+        }
+
+        #file-upload {
+            display: none;
+        }
+
+        .file-list {
+            margin-top: 10px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+        }
+
+        .file-size {
+            color: #888888;
+            font-size: 12px;
+        }
+
+        .remove-file {
+            background: none;
+            border: none;
+            color: red;
+            cursor: pointer;
+        }
+
+        .submit-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            display: none;
+            align-items: center;
+            color: #888888;
+            font-size: 14px;
+            z-index: 5; /* Increased z-index for loading container */
+            position: relative;
+        }
+
+        .spinner {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #000;
+            animation: spin 1s ease-in-out infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 6; /* Increased z-index for spinner */
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            position: relative;
+            z-index: 2; /* Ensure it's above video but below loading */
+        }
+
+        .main-content h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        .emoji {
+            margin-left: 10px;
+        }
+
+        .question-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 20px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+        }
+
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 300px;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .answer {
+            display: none;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 4; /* Increased z-index for answer */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <img src="https://icrm.drighna.com/files/system/_file65dedc0d156c1-site-logo.png" alt="Drighna Tech Logo">
+                <h2>Envisioned to do it...</h2>
+            </div>
+            <div class="menu">
+                <h3>Menu:</h3>
+                <p>Upload your PDF Files and Click on the Submit & Process Button</p>
+                <div class="upload-box" id="upload-box">
+                    <label for="file-upload" class="file-label">
+                        Drag and drop files here
+                        <br>
+                        <span>Limit 200MB per file</span>
+                        <input type="file" id="file-upload" multiple accept=".pdf">
+                    </label>
+                    <div class="file-list" id="file-list"></div>
+                </div>
+                <form id="questionForm">
+                    <div>
+                        <label for="question">Enter your query:</label>
+                        <textarea id="question" name="question" rows="4" cols="50" required></textarea>
+                    </div>
+                    <button class="submit-button" type="submit">Submit & Process</button>
+                </form>
+                <div class="loading" id="loading">
+                    <div class="spinner" id="spinner"></div>
+                    <span>Processing...</span>
+                </div>
+            </div>
+        </div>
+        <div class="video-container">
+            <video class="video" autoplay loop muted>
+                <source src="https://edutech.drighna.com/uploads/gallery/media/1716385211-235994807664df5bb932dc!Artificial%20intelligence%20to%20Enhance%20Language%20Skills%20Presentation%20in%20Blue%20and%20Purple%203D%20Modern%20Style%20(5).mp4?1716385211" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <div class="main-content">
+            <h1>Chat with PDF using Gemini <span class="emoji">🤔</span></h1>
+            <p>Ask a Question from the PDF Files</p>
+            <div id="answerContainer" class="answer"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('file-upload');
+            const fileList = document.getElementById('file-list');
+            const submitButton = document.getElementById('submit-button');
+            const spinner = document.getElementById('spinner');
+            const answerContainer = document.getElementById('answerContainer');
+            const questionForm = document.getElementById('questionForm');
+
+            fileInput.addEventListener('change', function(event) {
+                const files = event.target.files;
+                fileList.innerHTML = '';
+                for (const file of files) {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+
+                    const fileName = document.createElement('span');
+                    fileName.textContent = file.name;
+
+                    const fileSize = document.createElement('span');
+                    fileSize.className = 'file-size';
+                    fileSize.textContent = (file.size / 1024 / 1024).toFixed(2) + 'MB';
+
+                    const removeButton = document.createElement('button');
+                    removeButton.className = 'remove-file';
+                    removeButton.innerHTML = '&times;';
+                    removeButton.addEventListener('click', function() {
+                        fileItem.remove();
+                    });
+
+                    fileItem.appendChild(fileName);
+                    fileItem.appendChild(fileSize);
+                    fileItem.appendChild(removeButton);
+
+                    fileList.appendChild(fileItem);
+                }
+            });
+
+            questionForm.onsubmit = async function(event) {
+                event.preventDefault();
+
+                if (fileList.childElementCount === 0) {
+                    alert('Please upload at least one file.');
+                    return;
+                }
+
+                spinner.style.display = 'block';
+
+                const formData = new FormData(questionForm);
+                const files = fileInput.files;
+                for (const file of files) {
+                    formData.append('pdf_file', file);
+                }
+
+                const response = await fetch('/ask-question', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                spinner.style.display = 'none';
+
+                if (result.answer) {
+                    answerContainer.innerHTML = result.answer;
+                    answerContainer.style.display = 'block';
+                } else {
+                    answerContainer.innerHTML = '<p>Something went wrong. Please try again.</p>';
+                    answerContainer.style.display = 'block';
+                }
+            };
+        });
+    </script>
+</body>
+</html>

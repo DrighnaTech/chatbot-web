@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with PDF using Gemini</title>
+ 
+</head>
+<style>
+    /* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    background-color: #f4f4f9;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+}
+
+.sidebar {
+    width: 300px;
+    background-color: #ffffff;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    text-align: center;
+}
+
+.logo img {
+    width: 100px;
+}
+
+.logo h2 {
+    font-size: 14px;
+    color: #888888;
+}
+
+.menu {
+    margin-top: 20px;
+}
+
+.menu h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.menu p {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.upload-box {
+    border: 2px dashed #cccccc;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.file-label {
+    display: block;
+    cursor: pointer;
+}
+
+#file-upload {
+    display: none;
+}
+
+.file-list {
+    margin-top: 10px;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.file-size {
+    color: #888888;
+    font-size: 12px;
+}
+
+.remove-file {
+    background: none;
+    border: none;
+    color: red;
+    cursor: pointer;
+}
+
+.submit-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #ff4d4d;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.loading {
+    display: none;
+    align-items: center;
+    color: #888888;
+    font-size: 14px;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #cccccc;
+    border-top: 2px solid #888888;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.main-content h1 {
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+}
+
+.emoji {
+    margin-left: 10px;
+}
+
+.question-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    margin-top: 20px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+}
+
+</style>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <img src="drighna_logo.png" alt="Drighna Tech Logo">
+                <h2>Envisioned to do it...</h2>
+            </div>
+            <div class="menu">
+                <h3>Menu:</h3>
+                <p>Upload your PDF Files and Click on the Submit & Process Button</p>
+                <div class="upload-box" id="upload-box">
+                    <label for="file-upload" class="file-label">
+                        Drag and drop files here
+                        <br>
+                        <span>Limit 200MB per file</span>
+                        <input type="file" id="file-upload" multiple accept=".pdf">
+                    </label>
+                    <div class="file-list" id="file-list"></div>
+                </div>
+                <button class="submit-button" id="submit-button">Submit & Process</button>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <span>Processing...</span>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <h1>Chat with PDF using Gemini <span class="emoji">🤔</span></h1>
+            <input type="text" class="question-input" placeholder="Ask a Question from the PDF Files">
+        </div>
+    </div>
+    <script>// scripts.js
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('file-upload');
+            const fileList = document.getElementById('file-list');
+            const submitButton = document.getElementById('submit-button');
+            const loadingIndicator = document.getElementById('loading');
+        
+            fileInput.addEventListener('change', function(event) {
+                const files = event.target.files;
+                fileList.innerHTML = '';
+                for (const file of files) {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+        
+                    const fileName = document.createElement('span');
+                    fileName.textContent = file.name;
+        
+                    const fileSize = document.createElement('span');
+                    fileSize.className = 'file-size';
+                    fileSize.textContent = (file.size / 1024 / 1024).toFixed(2) + 'MB';
+        
+                    const removeButton = document.createElement('button');
+                    removeButton.className = 'remove-file';
+                    removeButton.innerHTML = '&times;';
+                    removeButton.addEventListener('click', function() {
+                        fileItem.remove();
+                    });
+        
+                    fileItem.appendChild(fileName);
+                    fileItem.appendChild(fileSize);
+                    fileItem.appendChild(removeButton);
+        
+                    fileList.appendChild(fileItem);
+                }
+            });
+        
+            submitButton.addEventListener('click', function() {
+                if (fileList.childElementCount === 0) {
+                    alert('Please upload at least one file.');
+                    return;
+                }
+        
+                loadingIndicator.style.display = 'flex';
+        
+                setTimeout(function() {
+                    loadingIndicator.style.display = 'none';
+                    alert('Processing complete.');
+                }, 3000);
+            });
+        });
+        </script>
+</body>
+</html>

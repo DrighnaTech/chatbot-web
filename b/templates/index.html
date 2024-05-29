@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson Plan and Question Assistant</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            position: relative;
+            overflow: hidden;
+        }
+
+        video#backgroundVideo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        #questionForm {
+            background-color: rgba(16, 18, 19, 0.8); /* Improved readability */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        #questionForm div {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: white; /* Improved visibility */
+        }
+
+        input[type="file"], textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        #answerContainer {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: black; /* Ensuring text is visible */
+            width: 90%; /* Ensuring it's well-spaced */
+            max-width: 600px; /* Limiting maximum width */
+        }
+    </style>
+</head>
+<body>
+    <video id="backgroundVideo" autoplay muted loop>
+        <source src="ai.mp4" type="video/mp4">
+        Your browser does not support HTML5 video.
+    </video>
+
+    <form id="questionForm" action="/ask-question" method="post" enctype="multipart/form-data">
+        <div>
+            <label for="pdf_file">Upload your PDF:</label>
+            <input type="file" id="pdf_file" name="pdf_file" required>
+        </div>
+        <div>
+            <label for="question">Enter your query:</label>
+            <textarea id="question" name="question" rows="4" cols="50" required></textarea>
+        </div>
+        <div>
+            <button type="submit">Submit your query</button>
+        </div>
+    </form>
+    <div id="answerContainer" class="answer" style="display: none;"></div>
+
+    <script>
+        document.getElementById('questionForm').onsubmit = async function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const response = await fetch('/ask-question', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            const answerContainer = document.getElementById('answerContainer');
+            
+            if (result.answer) {
+                answerContainer.innerHTML = result.answer;
+                answerContainer.style.display = 'block';
+            } else {
+                answerContainer.innerHTML = '<p>Something went wrong. Please try again.</p>';
+                answerContainer.style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>
